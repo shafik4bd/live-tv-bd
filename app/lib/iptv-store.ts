@@ -97,7 +97,6 @@ export async function writeIPTVConfig(config: IPTVConfig) {
   const db = getFirebaseDatabase();
   if (db) {
     await db.ref("iptvConfig").set(nextConfig);
-    writeLocalConfig(nextConfig);
     return nextConfig;
   }
 
