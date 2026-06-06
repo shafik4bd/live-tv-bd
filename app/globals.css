@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #08111f;
+  --color-primary: #22c55e;
+  --color-primary-dark: #16a34a;
+  --color-secondary: #22d3ee;
+  --color-card: rgba(15, 23, 42, 0.82);
+  --color-card-border: rgba(148, 163, 184, 0.16);
+}
+
+@layer base {
+  html, body {
+    background-color: #08111f;
+    @apply text-white antialiased selection:bg-primary/30;
+  }
+  body {
+    font-family: 'Inter', 'Poppins', system-ui, -apple-system, sans-serif;
+    min-height: 100%;
+  }
+}
+
+.glass-card {
+  @apply bg-card backdrop-blur-xl border border-card-border rounded-2xl;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-linear-to-r from-[#34d399] via-[#22d3ee] to-[#fbbf24];
+}
+
+.hero-gradient {
+  background: radial-gradient(circle at 60% 40%, rgba(34, 211, 238, 0.14) 0%, rgba(8, 17, 31, 0) 70%);
+}
+
+.glow {
+  box-shadow: 0 0 40px rgba(34, 197, 94, 0.22);
+}
+
+.btn-primary {
+  @apply bg-linear-to-r from-[#22c55e] to-[#0891b2] hover:from-[#4ade80] hover:to-[#22d3ee] text-slate-950 transition-all shadow-lg shadow-primary/20;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.24);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.46);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.24) rgba(255, 255, 255, 0.02);
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-in {
+  animation: slideInFromRight 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
