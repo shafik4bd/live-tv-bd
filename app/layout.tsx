@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const siteUrl = "https://tv.shajon.dev";
+const siteUrl = "https://live-tv-bd.vercel.app";
 
 export const viewport: Viewport = {
   width: "device-width",
