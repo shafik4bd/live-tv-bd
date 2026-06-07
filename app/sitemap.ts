@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://tv.shajon.dev";
+  const baseUrl = "https://live-tv-bd.vercel.app/";
   
   return [
     {
