@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-const siteUrl = "https://tv.shajon.dev";
+const siteUrl = "https://live-tv-bd.vercel.app/";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -14,12 +14,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "IPTV Player - Watch Live TV Channels",
+  title: "BD IPTV Player - FIFA WORLD CUP 2026 LIVE FREE",
   description:
     "Stream live TV channels with an admin-managed IPTV web player, HLS streaming, custom playlist support, featured segments, and popup controls.",
   keywords: [
     "IPTV",
-    "live TV",
+    "FIFA World CUp 2026 live TV",
     "streaming",
     "HLS player",
     "TV channels",
