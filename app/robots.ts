@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/api/", "/_next/"],
     },
-    sitemap: "https://tv.shajon.dev/sitemap.xml",
+    sitemap: "https://live-tv-bd.vercel.app/sitemap.xml",
   };
 }
