@@ -69,7 +69,6 @@ export default function IPTVPlayer() {
   const [volume, setVolume] = useState(0.85);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [isLiveStream, setIsLiveStream] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [expandedSources, setExpandedSources] = useState<Record<string, boolean>>({});
@@ -79,16 +78,6 @@ export default function IPTVPlayer() {
   const hlsRef = useRef<Hls | null>(null);
   const retryRef = useRef(0);
   const volumeRef = useRef(0.85);
-
-  const seekToLiveEdge = useCallback((soft = true) => {
-    const video = videoRef.current;
-    if (!video || !video.seekable.length) return;
-    const liveEdge = video.seekable.end(video.seekable.length - 1);
-    const target = Math.max(0, liveEdge - 2);
-    if (!soft || liveEdge - video.currentTime > 8 || video.currentTime < video.seekable.start(0)) {
-      video.currentTime = target;
-    }
-  }, []);
 
   const loadChannelStream = useCallback((channel: Channel, options: { silent?: boolean } = {}) => {
     const video = videoRef.current;
@@ -116,30 +105,16 @@ export default function IPTVPlayer() {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
-        startFragPrefetch: true,
-        maxBufferLength: 45,
-        maxMaxBufferLength: 90,
-        maxBufferSize: 80 * 1000 * 1000,
-        backBufferLength: 30,
-        liveSyncDurationCount: 2,
-        liveMaxLatencyDurationCount: 6,
-        maxLiveSyncPlaybackRate: 1.2,
-        maxBufferHole: 0.5,
-        highBufferWatchdogPeriod: 2,
+        backBufferLength: 60,
       });
       hlsRef.current = hls;
       hls.loadSource(playableUrl);
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         retryRef.current = 0;
-        window.setTimeout(() => seekToLiveEdge(true), 400);
         if (!wasPaused || options.silent) {
           video.play().catch(() => undefined);
         }
-      });
-      hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {
-        setIsLiveStream(Boolean(data.details.live));
-        if (data.details.live) seekToLiveEdge(true);
       });
       hls.on(Hls.Events.ERROR, (_, data) => {
         if (!data.fatal || retryRef.current >= 3) {
@@ -153,7 +128,7 @@ export default function IPTVPlayer() {
       video.src = playableUrl;
       if (!wasPaused || options.silent) video.play().catch(() => undefined);
     }
-  }, [seekToLiveEdge]);
+  }, []);
 
   const loadConfig = useCallback(async () => {
     setLoading(true);
@@ -190,7 +165,6 @@ export default function IPTVPlayer() {
   useEffect(() => {
     if (!selectedChannel) return;
     retryRef.current = 0;
-    setIsLiveStream(false);
     setDuration(0);
     setCurrentTime(0);
     loadChannelStream(selectedChannel);
@@ -364,7 +338,7 @@ export default function IPTVPlayer() {
     setShowControls((current) => !current);
   };
 
-  const canSeek = !isLiveStream && Number.isFinite(duration) && duration > 0;
+  const canSeek = Number.isFinite(duration) && duration > 0;
 
   return (
     <div className="mx-auto max-w-7xl px-3 pb-12 pt-4 text-white sm:px-6">
@@ -393,12 +367,6 @@ export default function IPTVPlayer() {
                   onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
                   onDurationChange={(event) => setDuration(event.currentTarget.duration || 0)}
                   onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime || 0)}
-                  onWaiting={() => {
-                    if (isLiveStream) seekToLiveEdge(true);
-                  }}
-                  onStalled={() => {
-                    if (isLiveStream) seekToLiveEdge(true);
-                  }}
                 />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
@@ -451,7 +419,7 @@ export default function IPTVPlayer() {
                 }`}
                 onClick={(event) => event.stopPropagation()}
               >
-                {canSeek ? (
+                {canSeek && (
                   <div className="mb-3 flex items-center gap-3 text-[11px] font-bold text-slate-300">
                     <span className="w-10 text-right">{formatTime(currentTime)}</span>
                     <input
@@ -466,15 +434,7 @@ export default function IPTVPlayer() {
                     />
                     <span className="w-10">{formatTime(duration)}</span>
                   </div>
-                ) : isLiveStream ? (
-                  <div className="mb-3 flex items-center gap-3 text-[11px] font-bold text-emerald-200">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                    <div className="h-1 min-w-0 flex-1 rounded-full bg-white/20">
-                      <div className="h-full w-full rounded-full bg-emerald-400" />
-                    </div>
-                    <span>LIVE</span>
-                  </div>
-                ) : null}
+                )}
                 <div className="flex flex-wrap items-end justify-between gap-3">
                   <div className="min-w-0">
                     <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-300">
