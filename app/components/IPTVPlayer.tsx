@@ -193,10 +193,30 @@ export default function IPTVPlayer() {
 
   useEffect(() => {
     const syncFullscreen = () => {
-      setIsFullscreen(document.fullscreenElement === playerRef.current);
+      const isFs = !!document.fullscreenElement;
+      setIsFullscreen(isFs);
+      if (!isFs) {
+        // Delay orientation unlock to avoid layout thrashing during exit animation
+        setTimeout(() => {
+          try {
+            const orientation = window.screen?.orientation as ScreenOrientation & {
+              unlock?: () => void;
+            };
+            if (orientation && typeof orientation.unlock === "function") {
+              orientation.unlock();
+            }
+          } catch {
+            // orientation.unlock() not supported
+          }
+        }, 150);
+      }
     };
     document.addEventListener("fullscreenchange", syncFullscreen);
-    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+    document.addEventListener("webkitfullscreenchange", syncFullscreen);
+    return () => {
+      document.removeEventListener("fullscreenchange", syncFullscreen);
+      document.removeEventListener("webkitfullscreenchange", syncFullscreen);
+    };
   }, []);
 
   const allSources = useMemo(
@@ -319,16 +339,49 @@ export default function IPTVPlayer() {
   };
 
   const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen?.().catch(() => undefined);
-      try { (screen.orientation as any).unlock?.(); } catch { /* not supported */ }
+    const container = playerRef.current;
+    const video = videoRef.current;
+    if (!container) return;
+
+    // iOS Safari: use video.webkitEnterFullscreen() since div.requestFullscreen() is unsupported
+    const videoEl = video as HTMLVideoElement & {
+      webkitEnterFullscreen?: () => void;
+    };
+    if (
+      !document.fullscreenElement &&
+      !container.requestFullscreen &&
+      videoEl?.webkitEnterFullscreen
+    ) {
+      videoEl.webkitEnterFullscreen();
       return;
     }
-    playerRef.current?.requestFullscreen?.().then(() => {
-      try {
-        (screen.orientation as any).lock?.("landscape").catch?.(() => { /* not supported */ });
-      } catch { /* not supported */ }
-    }).catch(() => undefined);
+
+    if (!document.fullscreenElement) {
+      container
+        .requestFullscreen()
+        .then(() => {
+          // Delay orientation lock to let browser finish fullscreen animation
+          setTimeout(() => {
+            try {
+              const orientation = window.screen?.orientation as ScreenOrientation & {
+                lock?: (orientation: string) => Promise<void>;
+              };
+              if (orientation && typeof orientation.lock === "function") {
+                orientation
+                  .lock("landscape")
+                  .catch(() => { /* orientation lock not supported */ });
+              }
+            } catch {
+              // orientation API not available
+            }
+          }, 300);
+        })
+        .catch((err) => console.warn("Fullscreen request failed:", err));
+    } else {
+      document
+        .exitFullscreen()
+        .catch((err) => console.warn("Exit fullscreen failed:", err));
+    }
   };
 
   const pip = () => {
@@ -452,11 +505,11 @@ export default function IPTVPlayer() {
                     {!isFullscreen && <p className="truncate text-sm text-slate-400">{selectedSource?.name || "No source"}</p>}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={playPause} className="rounded-xl bg-white p-2.5 text-slate-950 hover:bg-cyan-200" title={isPaused ? "Play" : "Pause"}>
-                      {isPaused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
+                    <button onClick={playPause} className={`rounded-xl bg-white text-slate-950 hover:bg-cyan-200 ${isFullscreen ? "p-2" : "p-3"}`} title={isPaused ? "Play" : "Pause"}>
+                      {isPaused ? <Play size={isFullscreen ? 16 : 18} fill="currentColor" /> : <Pause size={isFullscreen ? 16 : 18} fill="currentColor" />}
                     </button>
-                    <button onClick={toggleMute} className="rounded-xl border border-white/10 bg-white/10 p-2.5 hover:bg-white/20" title={isMuted ? "Unmute" : "Mute"}>
-                      {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                    <button onClick={toggleMute} className={`rounded-xl border border-white/10 bg-white/10 hover:bg-white/20 ${isFullscreen ? "p-2" : "p-3"}`} title={isMuted ? "Unmute" : "Mute"}>
+                      {isMuted ? <VolumeX size={isFullscreen ? 16 : 18} /> : <Volume2 size={isFullscreen ? 16 : 18} />}
                     </button>
                     <input
                       type="range"
@@ -468,11 +521,11 @@ export default function IPTVPlayer() {
                       className="hidden h-1 w-20 accent-cyan-300 sm:block"
                       aria-label="Volume"
                     />
-                    <button onClick={pip} className="rounded-xl border border-white/10 bg-white/10 p-2.5 hover:bg-white/20" title="Picture in picture">
-                      <PictureInPicture size={16} />
+                    <button onClick={pip} className={`rounded-xl border border-white/10 bg-white/10 hover:bg-white/20 ${isFullscreen ? "p-2" : "p-3"}`} title="Picture in picture">
+                      <PictureInPicture size={isFullscreen ? 16 : 18} />
                     </button>
-                    <button onClick={toggleFullscreen} className="rounded-xl border border-white/10 bg-white/10 p-2.5 hover:bg-white/20" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
-                      {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+                    <button onClick={toggleFullscreen} className={`rounded-xl border border-white/10 bg-white/10 hover:bg-white/20 ${isFullscreen ? "p-2" : "p-3"}`} title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+                      {isFullscreen ? <Minimize size={isFullscreen ? 16 : 18} /> : <Maximize size={isFullscreen ? 16 : 18} />}
                     </button>
                   </div>
                 </div>
