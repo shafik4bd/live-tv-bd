@@ -98,7 +98,7 @@ Ensure you have **Node.js** (v18.x or newer) installed.
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/SHAJON-404/iptv.git
+   git clone https://github.com/shafik4bd/live-tv-bd.git
    cd iptv
    ```
 
