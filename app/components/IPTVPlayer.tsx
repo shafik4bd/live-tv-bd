@@ -15,8 +15,8 @@ import {
   Play,
   Radio,
   RefreshCw,
-  Search,
   Scan,
+  Search,
   Tv,
   Volume2,
   VolumeX,
@@ -74,17 +74,16 @@ export default function IPTVPlayer() {
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [expandedSources, setExpandedSources] = useState<Record<string, boolean>>({});
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
-  // Zoom & Pan state (fullscreen only)
+  // Zoom & Pan (fullscreen only)
   const [videoZoom, setVideoZoom] = useState(1);
   const [videoPan, setVideoPan] = useState({ x: 0, y: 0 });
   const zoomRef = useRef(1);
   const panRef = useRef({ x: 0, y: 0 });
-  const lastTouchDistRef = useRef<number | null>(null);
-  const lastTouchCenterRef = useRef<{ x: number; y: number } | null>(null);
+  const lastPinchDistRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const videoRef = useRef<HTMLVideoElement>(null);
   const playerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -205,9 +204,16 @@ export default function IPTVPlayer() {
 
   useEffect(() => {
     const syncFullscreen = () => {
-      setIsFullscreen(document.fullscreenElement === playerRef.current);
-      // Reset zoom/pan when exiting fullscreen
-      if (!document.fullscreenElement) {
+      const isFs = !!document.fullscreenElement;
+      setIsFullscreen(isFs);
+      if (!isFs) {
+        // Unlock orientation on exit (150ms delay to avoid layout thrashing)
+        setTimeout(() => {
+          try {
+            (screen.orientation as any).unlock?.();
+          } catch { /* not supported */ }
+        }, 150);
+        // Reset zoom/pan
         setVideoZoom(1);
         setVideoPan({ x: 0, y: 0 });
         zoomRef.current = 1;
@@ -215,7 +221,11 @@ export default function IPTVPlayer() {
       }
     };
     document.addEventListener("fullscreenchange", syncFullscreen);
-    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+    document.addEventListener("webkitfullscreenchange", syncFullscreen);
+    return () => {
+      document.removeEventListener("fullscreenchange", syncFullscreen);
+      document.removeEventListener("webkitfullscreenchange", syncFullscreen);
+    };
   }, []);
 
   const allSources = useMemo(
@@ -338,90 +348,80 @@ export default function IPTVPlayer() {
   };
 
   const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen?.().catch(() => undefined);
+    const container = playerRef.current;
+    const video = videoRef.current;
+    if (!container) return;
+
+    // iOS Safari fallback
+    const videoEl = video as HTMLVideoElement & { webkitEnterFullscreen?: () => void };
+    if (!document.fullscreenElement && !container.requestFullscreen && videoEl?.webkitEnterFullscreen) {
+      videoEl.webkitEnterFullscreen();
       return;
     }
-    playerRef.current?.requestFullscreen?.().catch(() => undefined);
-  };
 
-  const pip = () => {
-    const video = videoRef.current;
-    if (!video || !document.pictureInPictureEnabled) return;
-    if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => undefined);
-    else video.requestPictureInPicture().catch(() => undefined);
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().then(() => {
+        // Lock landscape after fullscreen animation (300ms delay)
+        setTimeout(() => {
+          try {
+            (screen.orientation as any).lock?.("landscape")
+              .catch?.(() => { /* not supported */ });
+          } catch { /* not supported */ }
+        }, 300);
+      }).catch((err) => console.warn("Fullscreen failed:", err));
+    } else {
+      document.exitFullscreen().catch((err) => console.warn("Exit fullscreen failed:", err));
+    }
   };
 
   // Zoom cycle: 1x → 1.5x → 2x → 1x
   const cycleZoom = () => {
-    const next = zoomRef.current >= 2 ? 1 : zoomRef.current >= 1.5 ? 2 : 1.5;
+    const next = zoomRef.current >= 1.9 ? 1 : zoomRef.current >= 1.4 ? 2 : 1.5;
     zoomRef.current = next;
-    if (next === 1) {
-      panRef.current = { x: 0, y: 0 };
-      setVideoPan({ x: 0, y: 0 });
-    }
+    if (next === 1) { panRef.current = { x: 0, y: 0 }; setVideoPan({ x: 0, y: 0 }); }
     setVideoZoom(next);
   };
 
   const clampPan = (x: number, y: number, zoom: number) => {
-    const video = videoRef.current;
-    if (!video || zoom <= 1) return { x: 0, y: 0 };
-    const maxX = (video.clientWidth * (zoom - 1)) / 2;
-    const maxY = (video.clientHeight * (zoom - 1)) / 2;
-    return {
-      x: Math.max(-maxX, Math.min(maxX, x)),
-      y: Math.max(-maxY, Math.min(maxY, y)),
-    };
+    const v = videoRef.current;
+    if (!v || zoom <= 1) return { x: 0, y: 0 };
+    const mx = (v.clientWidth * (zoom - 1)) / 2;
+    const my = (v.clientHeight * (zoom - 1)) / 2;
+    return { x: Math.max(-mx, Math.min(mx, x)), y: Math.max(-my, Math.min(my, y)) };
   };
 
   const handleVideoTouchStart = (e: React.TouchEvent) => {
     if (!isFullscreen) return;
     if (e.touches.length === 2) {
-      // Pinch start
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      lastTouchDistRef.current = Math.sqrt(dx * dx + dy * dy);
-      lastTouchCenterRef.current = {
-        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-        y: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-      };
+      lastPinchDistRef.current = Math.sqrt(dx * dx + dy * dy);
       isDraggingRef.current = false;
     } else if (e.touches.length === 1 && zoomRef.current > 1) {
-      // Pan start
       isDraggingRef.current = true;
-      dragStartRef.current = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-        px: panRef.current.x,
-        py: panRef.current.y,
-      };
+      dragStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, px: panRef.current.x, py: panRef.current.y };
     }
   };
 
   const handleVideoTouchMove = (e: React.TouchEvent) => {
     if (!isFullscreen) return;
-    if (e.touches.length === 2 && lastTouchDistRef.current !== null) {
-      // Pinch zoom
+    if (e.touches.length === 2 && lastPinchDistRef.current !== null) {
       e.stopPropagation();
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      const delta = dist / lastTouchDistRef.current;
-      const newZoom = Math.max(1, Math.min(3, zoomRef.current * delta));
-      lastTouchDistRef.current = dist;
+      const newZoom = Math.max(1, Math.min(3, zoomRef.current * (dist / lastPinchDistRef.current)));
+      lastPinchDistRef.current = dist;
       zoomRef.current = newZoom;
       const clamped = clampPan(panRef.current.x, panRef.current.y, newZoom);
       panRef.current = clamped;
       setVideoZoom(newZoom);
       setVideoPan(clamped);
     } else if (e.touches.length === 1 && isDraggingRef.current && dragStartRef.current) {
-      // Pan
       e.stopPropagation();
-      const dx = e.touches[0].clientX - dragStartRef.current.x;
-      const dy = e.touches[0].clientY - dragStartRef.current.y;
       const clamped = clampPan(
-        dragStartRef.current.px + dx,
-        dragStartRef.current.py + dy,
+        dragStartRef.current.px + (e.touches[0].clientX - dragStartRef.current.x),
+        dragStartRef.current.py + (e.touches[0].clientY - dragStartRef.current.y),
         zoomRef.current
       );
       panRef.current = clamped;
@@ -431,14 +431,15 @@ export default function IPTVPlayer() {
 
   const handleVideoTouchEnd = (e: React.TouchEvent) => {
     if (!isFullscreen) return;
-    if (e.touches.length < 2) {
-      lastTouchDistRef.current = null;
-      lastTouchCenterRef.current = null;
-    }
-    if (e.touches.length === 0) {
-      isDraggingRef.current = false;
-      dragStartRef.current = null;
-    }
+    if (e.touches.length < 2) lastPinchDistRef.current = null;
+    if (e.touches.length === 0) { isDraggingRef.current = false; dragStartRef.current = null; }
+  };
+
+  const pip = () => {
+    const video = videoRef.current;
+    if (!video || !document.pictureInPictureEnabled) return;
+    if (document.pictureInPictureElement) document.exitPictureInPicture().catch(() => undefined);
+    else video.requestPictureInPicture().catch(() => undefined);
   };
 
   const toggleControls = () => {
@@ -465,7 +466,7 @@ export default function IPTVPlayer() {
               {selectedChannel ? (
                 <video
                   ref={videoRef}
-                  className="h-full w-full object-contain transition-transform duration-100 will-change-transform"
+                  className="h-full w-full object-contain transition-transform duration-75 will-change-transform"
                   style={{
                     transform: `scale(${videoZoom}) translate(${videoPan.x / videoZoom}px, ${videoPan.y / videoZoom}px)`,
                     touchAction: isFullscreen ? "none" : "auto",
@@ -531,10 +532,11 @@ export default function IPTVPlayer() {
                 </div>
               )}
 
+              {/* Controls overlay */}
               <div
-                className={`absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/60 to-transparent p-3 transition-opacity duration-300 sm:p-5 ${
-                  showControls || playerStatus !== "playing" ? "opacity-100" : "pointer-events-none opacity-0"
-                }`}
+                className={`absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/60 to-transparent transition-opacity duration-300 ${
+                  isFullscreen ? "p-2 pb-[max(8px,env(safe-area-inset-bottom))]" : "p-3 sm:p-5"
+                } ${showControls || playerStatus !== "playing" ? "opacity-100" : "pointer-events-none opacity-0"}`}
                 onClick={(event) => event.stopPropagation()}
               >
                 {canSeek && (
@@ -554,24 +556,26 @@ export default function IPTVPlayer() {
                   </div>
                 )}
                 <div className="flex items-center justify-between gap-2">
+                  {/* Channel info */}
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-emerald-300">
-                      <Radio size={11} />
+                      <Radio size={10} />
                       {playerStatus === "playing" ? "Live now" : "Ready"}
                     </p>
-                    <h2 className={`truncate font-black leading-tight ${isFullscreen ? "text-sm" : "text-base sm:text-2xl"}`}>
+                    <h2 className={`truncate font-black leading-tight ${isFullscreen ? "text-sm" : "text-xl sm:text-3xl"}`}>
                       {selectedChannel?.name || "Admin-managed IPTV"}
                     </h2>
                     {!isFullscreen && (
-                      <p className="truncate text-xs text-slate-400">{selectedSource?.name || "No source"}</p>
+                      <p className="truncate text-sm text-slate-400">{selectedSource?.name || "No source"}</p>
                     )}
                   </div>
+                  {/* Buttons */}
                   <div className="flex shrink-0 items-center gap-1.5">
-                    <button onClick={playPause} className="rounded-lg bg-white p-2 text-slate-950 hover:bg-cyan-200" title={isPaused ? "Play" : "Pause"}>
-                      {isPaused ? <Play size={15} fill="currentColor" /> : <Pause size={15} fill="currentColor" />}
+                    <button onClick={playPause} className={`rounded-xl bg-white text-slate-950 hover:bg-cyan-200 ${isFullscreen ? "p-2" : "p-3"}`} title={isPaused ? "Play" : "Pause"}>
+                      {isPaused ? <Play size={isFullscreen ? 15 : 18} fill="currentColor" /> : <Pause size={isFullscreen ? 15 : 18} fill="currentColor" />}
                     </button>
-                    <button onClick={toggleMute} className="rounded-lg border border-white/10 bg-white/10 p-2 hover:bg-white/20" title={isMuted ? "Unmute" : "Mute"}>
-                      {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                    <button onClick={toggleMute} className={`rounded-xl border border-white/10 bg-white/10 hover:bg-white/20 ${isFullscreen ? "p-2" : "p-3"}`} title={isMuted ? "Unmute" : "Mute"}>
+                      {isMuted ? <VolumeX size={isFullscreen ? 15 : 18} /> : <Volume2 size={isFullscreen ? 15 : 18} />}
                     </button>
                     <input
                       type="range"
@@ -580,23 +584,23 @@ export default function IPTVPlayer() {
                       step="0.05"
                       value={isMuted ? 0 : volume}
                       onChange={(event) => changeVolume(event.target.value)}
-                      className="hidden h-1 w-16 accent-cyan-300 sm:block"
+                      className="hidden h-1 w-20 accent-cyan-300 sm:block"
                       aria-label="Volume"
                     />
                     {isFullscreen && (
                       <button
                         onClick={cycleZoom}
-                        className={`rounded-lg border p-2 transition ${videoZoom > 1 ? "border-cyan-300/50 bg-cyan-300/20 text-cyan-300" : "border-white/10 bg-white/10 hover:bg-white/20"}`}
-                        title={`Zoom: ${videoZoom.toFixed(1)}x — tap to cycle`}
+                        className={`rounded-xl border p-2 ${videoZoom > 1 ? "border-cyan-400/50 bg-cyan-400/20 text-cyan-300" : "border-white/10 bg-white/10 hover:bg-white/20"}`}
+                        title={`Zoom ${videoZoom.toFixed(1)}x — tap to cycle`}
                       >
                         {videoZoom > 1 ? <Scan size={15} /> : <ZoomIn size={15} />}
                       </button>
                     )}
-                    <button onClick={pip} className="rounded-lg border border-white/10 bg-white/10 p-2 hover:bg-white/20" title="Picture in picture">
-                      <PictureInPicture size={15} />
+                    <button onClick={pip} className={`rounded-xl border border-white/10 bg-white/10 hover:bg-white/20 ${isFullscreen ? "p-2" : "p-3"}`} title="Picture in picture">
+                      <PictureInPicture size={isFullscreen ? 15 : 18} />
                     </button>
-                    <button onClick={toggleFullscreen} className="rounded-lg border border-white/10 bg-white/10 p-2 hover:bg-white/20" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
-                      {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
+                    <button onClick={toggleFullscreen} className={`rounded-xl border border-white/10 bg-white/10 hover:bg-white/20 ${isFullscreen ? "p-2" : "p-3"}`} title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+                      {isFullscreen ? <Minimize size={isFullscreen ? 15 : 18} /> : <Maximize size={isFullscreen ? 15 : 18} />}
                     </button>
                   </div>
                 </div>
