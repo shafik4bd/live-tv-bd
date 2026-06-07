@@ -80,17 +80,17 @@ export default function Header() {
               </div>
               <div className="flex flex-col justify-center">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl sm:text-4xl font-black tracking-tight text-white">
+                  <span className="text-lg sm:text-4xl font-black tracking-tight text-white">
                     IP
                   </span>
-                  <span className="text-2xl sm:text-4xl font-black tracking-tight gradient-text">
-                    TV Player
+                  <span className="text-lg sm:text-4xl font-black tracking-tight gradient-text">
+                    TV
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-1.5">
                   <div className="flex items-center gap-1.5">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase text-emerald-400">
+                    <span className="text-[5px] sm:text-[10px] font-bold tracking-widest uppercase text-emerald-400">
                       LIVE BROADCAST
                     </span>
                   </div>
