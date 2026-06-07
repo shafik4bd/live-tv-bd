@@ -9,9 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   Maximize,
-  Maximize2,
   Minimize,
-  Minimize2,
   Pause,
   PictureInPicture,
   Play,
@@ -73,7 +71,6 @@ export default function IPTVPlayer() {
   const [currentTime, setCurrentTime] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isMobileLandscape, setIsMobileLandscape] = useState(false);
   const [expandedSources, setExpandedSources] = useState<Record<string, boolean>>({});
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -324,40 +321,15 @@ export default function IPTVPlayer() {
   const toggleFullscreen = () => {
     if (document.fullscreenElement) {
       document.exitFullscreen?.().catch(() => undefined);
+      try { (screen.orientation as any).unlock?.(); } catch { /* not supported */ }
       return;
     }
-    playerRef.current?.requestFullscreen?.().catch(() => undefined);
-  };
-
-  const toggleMobileLandscape = async () => {
-    if (isMobileLandscape) {
+    playerRef.current?.requestFullscreen?.().then(() => {
       try {
-        await (screen.orientation as any).unlock?.();
-      } catch {
-        // ignore
-      }
-      setIsMobileLandscape(false);
-    } else {
-      try {
-        await (screen.orientation as any).lock?.("landscape");
-      } catch {
-        // Browser may not support lock; still enter UI landscape mode
-      }
-      setIsMobileLandscape(true);
-    }
+        (screen.orientation as any).lock?.("landscape").catch?.(() => { /* not supported */ });
+      } catch { /* not supported */ }
+    }).catch(() => undefined);
   };
-
-  // Exit mobile landscape when device rotates back to portrait
-  useEffect(() => {
-    const handleOrientationChange = () => {
-      if (isMobileLandscape && window.screen.orientation?.type?.startsWith("portrait")) {
-        (screen.orientation as any).unlock?.().catch?.(() => undefined);
-        setIsMobileLandscape(false);
-      }
-    };
-    screen.orientation?.addEventListener?.("change", handleOrientationChange);
-    return () => screen.orientation?.removeEventListener?.("change", handleOrientationChange);
-  }, [isMobileLandscape]);
 
   const pip = () => {
     const video = videoRef.current;
@@ -379,18 +351,8 @@ export default function IPTVPlayer() {
 
       <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-5">
-          <div
-            ref={playerRef}
-            className={`overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/40 ${
-              isMobileLandscape
-                ? "fixed inset-0 z-[9999] rounded-none border-0"
-                : ""
-            }`}
-          >
-            <div
-              className={`relative bg-black ${isMobileLandscape ? "h-screen w-screen" : "aspect-video"}`}
-              onClick={toggleControls}
-            >
+          <div ref={playerRef} className="overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/40">
+            <div className="relative aspect-video bg-black" onClick={toggleControls}>
               {selectedChannel ? (
                 <video
                   ref={videoRef}
@@ -506,13 +468,6 @@ export default function IPTVPlayer() {
                     />
                     <button onClick={pip} className="rounded-xl border border-white/10 bg-white/10 p-3 hover:bg-white/20" title="Picture in picture">
                       <PictureInPicture size={18} />
-                    </button>
-                    <button
-                      onClick={toggleMobileLandscape}
-                      className="rounded-xl border border-white/10 bg-white/10 p-3 hover:bg-white/20 sm:hidden"
-                      title={isMobileLandscape ? "Exit big screen" : "Big screen (mobile)"}
-                    >
-                      {isMobileLandscape ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
                     </button>
                     <button onClick={toggleFullscreen} className="rounded-xl border border-white/10 bg-white/10 p-3 hover:bg-white/20" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
                       {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
