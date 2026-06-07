@@ -419,7 +419,9 @@ export default function IPTVPlayer() {
               )}
 
               <div
-                className={`absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/60 to-transparent p-3 transition-opacity duration-300 sm:p-5 ${
+                className={`absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/60 to-transparent transition-opacity duration-300 ${
+                  isFullscreen ? "p-3 pb-[max(12px,env(safe-area-inset-bottom))]" : "p-3 sm:p-5"
+                } ${
                   showControls || playerStatus !== "playing" ? "opacity-100" : "pointer-events-none opacity-0"
                 }`}
                 onClick={(event) => event.stopPropagation()}
@@ -440,21 +442,21 @@ export default function IPTVPlayer() {
                     <span className="w-10">{formatTime(duration)}</span>
                   </div>
                 )}
-                <div className="flex flex-wrap items-end justify-between gap-3">
+                <div className="flex flex-wrap items-end justify-between gap-2">
                   <div className="min-w-0">
                     <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-300">
                       <Radio size={13} />
                       {playerStatus === "playing" ? "Live now" : "Ready"}
                     </p>
-                    <h2 className="truncate text-xl font-black sm:text-3xl">{selectedChannel?.name || "Admin-managed IPTV"}</h2>
-                    <p className="truncate text-sm text-slate-400">{selectedSource?.name || "No source"}</p>
+                    <h2 className={`truncate font-black ${isFullscreen ? "text-base" : "text-xl sm:text-3xl"}`}>{selectedChannel?.name || "Admin-managed IPTV"}</h2>
+                    {!isFullscreen && <p className="truncate text-sm text-slate-400">{selectedSource?.name || "No source"}</p>}
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={playPause} className="rounded-xl bg-white p-3 text-slate-950 hover:bg-cyan-200" title={isPaused ? "Play" : "Pause"}>
-                      {isPaused ? <Play size={18} fill="currentColor" /> : <Pause size={18} fill="currentColor" />}
+                    <button onClick={playPause} className="rounded-xl bg-white p-2.5 text-slate-950 hover:bg-cyan-200" title={isPaused ? "Play" : "Pause"}>
+                      {isPaused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
                     </button>
-                    <button onClick={toggleMute} className="rounded-xl border border-white/10 bg-white/10 p-3 hover:bg-white/20" title={isMuted ? "Unmute" : "Mute"}>
-                      {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    <button onClick={toggleMute} className="rounded-xl border border-white/10 bg-white/10 p-2.5 hover:bg-white/20" title={isMuted ? "Unmute" : "Mute"}>
+                      {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                     </button>
                     <input
                       type="range"
@@ -466,11 +468,11 @@ export default function IPTVPlayer() {
                       className="hidden h-1 w-20 accent-cyan-300 sm:block"
                       aria-label="Volume"
                     />
-                    <button onClick={pip} className="rounded-xl border border-white/10 bg-white/10 p-3 hover:bg-white/20" title="Picture in picture">
-                      <PictureInPicture size={18} />
+                    <button onClick={pip} className="rounded-xl border border-white/10 bg-white/10 p-2.5 hover:bg-white/20" title="Picture in picture">
+                      <PictureInPicture size={16} />
                     </button>
-                    <button onClick={toggleFullscreen} className="rounded-xl border border-white/10 bg-white/10 p-3 hover:bg-white/20" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
-                      {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+                    <button onClick={toggleFullscreen} className="rounded-xl border border-white/10 bg-white/10 p-2.5 hover:bg-white/20" title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}>
+                      {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
                     </button>
                   </div>
                 </div>
