@@ -33,12 +33,13 @@ async function playFromJsonSource(request, url) {
     return jsonError(400, "Missing or invalid source/id");
   }
 
-  const source = await fetch(sourceUrl, {
+  const freshSourceUrl = withCacheBuster(sourceUrl);
+  const source = await fetch(freshSourceUrl, {
     headers: {
       Accept: "application/json,text/plain,*/*",
       "User-Agent": "Mozilla/5.0 OTT Proxy Worker",
+      "Cache-Control": "no-cache, no-store",
     },
-    cf: { cacheTtl: 30, cacheEverything: true },
   });
   if (!source.ok) return jsonError(source.status, `Source fetch failed: ${source.status}`);
 
@@ -249,6 +250,12 @@ function isHttpUrl(value) {
   } catch {
     return false;
   }
+}
+
+function withCacheBuster(value) {
+  const url = new URL(value);
+  url.searchParams.set("_ott_ts", Date.now().toString());
+  return url.toString();
 }
 
 function jsonError(status, message) {

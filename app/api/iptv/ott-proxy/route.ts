@@ -141,11 +141,14 @@ function getDynamicHeaders(channel: RawOTTChannel) {
 }
 
 async function fetchSource(sourceUrl: string) {
-  const response = await fetch(sourceUrl, {
+  const freshSourceUrl = new URL(sourceUrl);
+  freshSourceUrl.searchParams.set("_ott_ts", Date.now().toString());
+  const response = await fetch(freshSourceUrl.toString(), {
     cache: "no-store",
     headers: {
       Accept: "application/json,text/plain,*/*",
       "User-Agent": "Mozilla/5.0 IPTV OTT Proxy",
+      "Cache-Control": "no-cache, no-store",
     },
   });
   if (!response.ok) throw new Error(`Source JSON failed: ${response.status}`);
