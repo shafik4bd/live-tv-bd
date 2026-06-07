@@ -1,8 +1,8 @@
-# 📺 IPTV Player — Watch Live TV Channels
+# 📺 IPTV Player — Watch Free Live TV Channels
 
 A modern, high-performance, and premium web-based IPTV player built with **Next.js 16**, **React 19**, and **Tailwind CSS v4**. Stream high-quality live TV channels directly from official broadcast sources with a cinematic user interface.
 
-**Web Player**: https://tv.shajon.dev
+**Web Player**: live-tv-bd.vercel.app
 
 ---
 
@@ -132,4 +132,4 @@ This project is open-source software licensed under the **GNU General Public Lic
 2. **Preserve Developer Attribution**: You must preserve all S. SHAJON copyright, developer profile links (GitHub, Telegram, Facebook), and licensing labels in both the user interface and code files.
 3. **No Commercial Ads or Betting/Gambling Promotions**: If you build your own IPTV player or service based on this codebase, database, or resources, you are **strictly prohibited** from integrating or displaying any form of commercial advertisements, pop-up ads, redirect ads, or betting/gambling promotions of any kind.
 
-Developed with ♥ by [S. SHAJON](https://t.me/SHAJON). Follow [GitHub Profile](https://github.com/SHAJON-404) for updates.
+Developemnet Inspired with ♥ by [S. SHAJON](https://t.me/SHAJON). Follow [GitHub Profile](https://github.com/SHAJON-404) for updates.
