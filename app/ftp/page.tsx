@@ -2,13 +2,16 @@
 
 import { motion } from "motion/react";
 import {
+  ArrowUpRight,
+  CheckCircle2,
   Database,
+  FolderOpen,
+  Globe,
+  HardDrive,
   Network,
   Server,
+  ShieldCheck,
   Zap,
-  HardDrive,
-  Globe,
-  ArrowUpRight,
 } from "lucide-react";
 
 import BackgroundScene from "../components/BackgroundScene";
@@ -20,218 +23,178 @@ const ftpServers = [
     name: "BDIX Server 1",
     host: "103.225.94.27",
     url: "http://103.225.94.27/Infobase/",
-    description:
-      "High-speed BDIX local movie portal with TV shows, games, and software archive. Extremely fast on supported ISP lines.",
-    badge: "Multi-Gigabit",
-    icon: Database,
+    description: "Local BDIX media archive with movies, TV shows, games, and software collections.",
+    badge: "Local Archive",
     speed: "100 Mbps+",
-    gradient: "from-blue-600/15 via-cyan-600/10 to-blue-600/5",
-    borderHover: "hover:border-blue-500/30",
-    iconBg: "bg-blue-500/10 border-blue-500/15 text-blue-400",
-    accentColor: "blue",
-    btnGradient:
-      "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 shadow-lg shadow-blue-600/20 hover:shadow-blue-500/30",
+    protocol: "HTTP",
+    scope: "BDIX Peered ISP",
+    icon: Database,
+    accent: "emerald",
   },
   {
     id: "server-2",
     name: "FTPBD Server",
     host: "server1.ftpbd.net",
     url: "https://server1.ftpbd.net/#blog",
-    description:
-      "Popular media server with fresh releases, extensive movie library, series, games, blog reviews, and direct downloads.",
-    badge: "Premium Link",
-    icon: Network,
+    description: "Popular FTP media portal with fresh releases, series, movies, games, and blog updates.",
+    badge: "Media Portal",
     speed: "100 Mbps+",
-    gradient: "from-violet-600/15 via-purple-600/10 to-violet-600/5",
-    borderHover: "hover:border-violet-500/30",
-    iconBg: "bg-violet-500/10 border-violet-500/15 text-violet-400",
-    accentColor: "violet",
-    btnGradient:
-      "bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 shadow-lg shadow-violet-600/20 hover:shadow-violet-500/30",
+    protocol: "HTTPS",
+    scope: "Public Access",
+    icon: Network,
+    accent: "cyan",
   },
 ];
 
-const stats = [
+const summary = [
   { label: "Network", value: "BDIX", icon: Globe },
-  { label: "Avg Speed", value: "100 Mbps+", icon: Zap },
-  { label: "Servers", value: "2 Active", icon: Server },
-  { label: "Content", value: "TB+ Files", icon: HardDrive },
+  { label: "Servers", value: "2 Online", icon: Server },
+  { label: "Speed", value: "100 Mbps+", icon: Zap },
+  { label: "Library", value: "TB+ Files", icon: HardDrive },
 ];
 
 export default function FtpPage() {
   return (
-    <main className="relative min-h-screen text-white overflow-hidden pb-16">
+    <main className="relative min-h-screen overflow-hidden pb-12 text-white">
       <BackgroundScene />
       <div className="relative z-10">
         <Header />
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-8 sm:mt-12">
-          {/* ─── Page Header ─── */}
-          <div className="text-center max-w-3xl mx-auto space-y-5 mb-10 sm:mb-14">
+        <section className="mx-auto max-w-7xl px-4 pt-5 sm:px-6 sm:pt-8">
+          <div className="flex flex-col gap-5 border-b border-white/10 pb-5 lg:flex-row lg:items-end lg:justify-between">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] border border-white/[0.06] backdrop-blur-sm"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35 }}
+              className="max-w-2xl"
             >
-              <span className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                All Systems Online
-              </span>
-              <span className="h-3 w-px bg-white/10" />
-              <span className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                BDIX Network
-              </span>
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-300">FTP Directory</span>
+              </div>
+              <h1 className="text-3xl font-black tracking-tight sm:text-5xl">BDIX Server Access</h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
+                Fast local media servers for BDIX peered networks. Pick a server, check the host details, and open it in a new tab.
+              </p>
             </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 15 }}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-3xl sm:text-5xl font-black tracking-tight leading-[1.1]"
+              transition={{ duration: 0.35, delay: 0.08 }}
+              className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:w-[560px]"
             >
-              High-Speed{" "}
-              <span className="gradient-text">FTP Servers</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-sm sm:text-base text-gray-400 font-medium max-w-xl mx-auto leading-relaxed"
-            >
-              Access local high-speed entertainment archives with zero-buffer
-              streaming, massive directories, and blazing fast downloads from
-              BDIX peered servers.
-            </motion.p>
+              {summary.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div key={item.label} className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-3">
+                    <div className="flex items-center gap-2 text-slate-500">
+                      <Icon size={14} />
+                      <span className="text-[10px] font-bold uppercase tracking-wider">{item.label}</span>
+                    </div>
+                    <p className="mt-1 text-sm font-black text-white">{item.value}</p>
+                  </div>
+                );
+              })}
+            </motion.div>
           </div>
 
-          {/* ─── Stats Bar ─── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.25 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto mb-10 sm:mb-14"
-          >
-            {stats.map((stat, i) => {
-              const StatIcon = stat.icon;
+          <div className="mt-6 grid gap-4">
+            {ftpServers.map((server, index) => {
+              const Icon = server.icon;
+              const isEmerald = server.accent === "emerald";
               return (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.05] backdrop-blur-sm"
-                >
-                  <div className="p-2 rounded-xl bg-white/[0.04]">
-                    <StatIcon size={16} className="text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">
-                      {stat.label}
-                    </p>
-                    <p className="text-sm font-bold text-white">
-                      {stat.value}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </motion.div>
-
-          {/* ─── Server Cards ─── */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 max-w-4xl mx-auto">
-            {ftpServers.map((server, idx) => {
-              const IconComponent = server.icon;
-              return (
-                <motion.div
+                <motion.article
                   key={server.id}
-                  initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    duration: 0.5,
-                    delay: 0.3 + idx * 0.12,
-                  }}
-                  className={`relative overflow-hidden rounded-3xl border border-white/[0.06] bg-gradient-to-br ${server.gradient} backdrop-blur-md transition-all duration-500 hover:-translate-y-1 ${server.borderHover} group`}
+                  transition={{ duration: 0.35, delay: 0.12 + index * 0.08 }}
+                  className="grid gap-4 rounded-lg border border-white/10 bg-[#101827]/90 p-4 shadow-xl shadow-black/20 lg:grid-cols-[1fr_320px]"
                 >
-                  {/* Glow effect on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none bg-gradient-to-br from-white/[0.02] to-transparent" />
-
-                  <div className="relative p-6 sm:p-8 flex flex-col justify-between h-[310px] sm:h-[340px]">
-                    {/* Top Section */}
-                    <div className="space-y-5">
-                      <div className="flex items-start justify-between">
-                        <div
-                          className={`p-3 rounded-2xl border ${server.iconBg} transition-transform duration-300 group-hover:scale-110`}
+                  <div className="flex gap-4">
+                    <div
+                      className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border ${
+                        isEmerald
+                          ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-300"
+                          : "border-cyan-400/20 bg-cyan-400/10 text-cyan-300"
+                      }`}
+                    >
+                      <Icon size={22} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-xl font-black sm:text-2xl">{server.name}</h2>
+                        <span
+                          className={`rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-wider ${
+                            isEmerald ? "bg-emerald-400/10 text-emerald-300" : "bg-cyan-400/10 text-cyan-300"
+                          }`}
                         >
-                          <IconComponent size={22} strokeWidth={2} />
+                          {server.badge}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-6 text-slate-400">{server.description}</p>
+
+                      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+                        <div className="rounded-md border border-white/10 bg-slate-950/35 px-3 py-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Host</p>
+                          <p className="mt-1 truncate font-mono text-xs text-slate-200">{server.host}</p>
                         </div>
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/15 select-none">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[9px] sm:text-[10px] font-bold text-emerald-400 tracking-wider uppercase">
-                            Online
-                          </span>
+                        <div className="rounded-md border border-white/10 bg-slate-950/35 px-3 py-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Speed</p>
+                          <p className="mt-1 text-xs font-black text-slate-200">{server.speed}</p>
+                        </div>
+                        <div className="rounded-md border border-white/10 bg-slate-950/35 px-3 py-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Protocol</p>
+                          <p className="mt-1 text-xs font-black text-slate-200">{server.protocol}</p>
                         </div>
                       </div>
+                    </div>
+                  </div>
 
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] uppercase font-bold tracking-[0.15em] text-primary/80 bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10">
-                            {server.badge}
-                          </span>
-                        </div>
-                        <h3 className="text-xl sm:text-2xl font-black text-white leading-tight tracking-tight">
-                          {server.name}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-400/90 leading-relaxed font-medium line-clamp-2">
-                          {server.description}
-                        </p>
+                  <div className="flex flex-col justify-between gap-4 rounded-lg border border-white/10 bg-slate-950/30 p-4">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-emerald-300">
+                          <CheckCircle2 size={15} />
+                          Online
+                        </span>
+                        <span className="rounded-md bg-white/[0.06] px-2 py-1 text-[10px] font-bold text-slate-400">
+                          {server.scope}
+                        </span>
                       </div>
-
-                      {/* Host & Speed Info */}
-                      <div className="flex items-center gap-3 text-[10px] sm:text-[11px] text-gray-500 font-mono">
-                        <span className="flex items-center gap-1">
-                          <Globe size={11} className="text-gray-600" />
-                          {server.host}
-                        </span>
-                        <span className="h-3 w-px bg-white/[0.06]" />
-                        <span className="flex items-center gap-1">
-                          <Zap size={11} className="text-gray-600" />
-                          {server.speed}
-                        </span>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="flex items-center gap-2 rounded-md bg-white/[0.04] px-3 py-2 text-slate-300">
+                          <FolderOpen size={14} className="text-slate-500" />
+                          Media library
+                        </div>
+                        <div className="flex items-center gap-2 rounded-md bg-white/[0.04] px-3 py-2 text-slate-300">
+                          <ShieldCheck size={14} className="text-slate-500" />
+                          Direct access
+                        </div>
                       </div>
                     </div>
 
-                    {/* CTA Button */}
                     <a
                       href={server.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`w-full flex items-center justify-center gap-2.5 py-3.5 px-5 rounded-2xl text-white font-extrabold text-xs sm:text-sm transition-all duration-300 ${server.btnGradient} active:scale-[0.97]`}
+                      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-black text-slate-950 transition active:scale-[0.98] ${
+                        isEmerald ? "bg-emerald-400 hover:bg-emerald-300" : "bg-cyan-300 hover:bg-cyan-200"
+                      }`}
                     >
-                      <span>Go to FTP</span>
-                      <ArrowUpRight
-                        size={15}
-                        strokeWidth={2.5}
-                        className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                      />
+                      Open Server
+                      <ArrowUpRight size={16} />
                     </a>
                   </div>
-                </motion.div>
+                </motion.article>
               );
             })}
           </div>
 
-          {/* ─── Footer Note ─── */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="mt-12 sm:mt-16 text-center max-w-lg mx-auto"
-          >
-            <p className="text-[10px] sm:text-xs text-gray-500/80 leading-relaxed font-medium">
-              BDIX FTP servers are hosted within local ISP networks. Maximum
-              speed (100 Mbps+) is available when your ISP is peered with BDIX.
-            </p>
-          </motion.div>
-        </div>
+          <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-6 text-slate-500">
+            BDIX speed depends on your ISP peering and route quality. Some servers may only perform at full speed on supported local networks.
+          </p>
+        </section>
       </div>
     </main>
   );
