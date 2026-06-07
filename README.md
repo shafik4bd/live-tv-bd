@@ -9,15 +9,30 @@ A modern, high-performance, and premium web-based IPTV player built with **Next.
 ## ✨ Features
 
 - 📺 **Cinematic Video Player**: Large, center-aligned, aspect-ratio locked media container utilizing HLS.js and native iOS Safari player engines. Supports Picture-in-Picture (PiP), custom volume controls, double-tap seek, and auto-fallback muted play.
+
+- 🔐 **Secure Admin Panel**: A fully locked, password-protected admin panel integrated directly with Firebase. Configure it via `.env.local` by connecting your Firebase project and setting an admin PIN. From the panel you can manage channel playlists, curate featured channel segments, and configure announcement popups — all in one place.
+
+- 📡 **OTT Platform Streaming**: Watch live channels from popular OTT platforms — including Toffee, FanCode, CricHD, and more — seamlessly within the same player. Streams are proxied to handle dynamic, header-authenticated JSON playlists (cookies/tokens injected automatically).
+
+- ⚙️ **React Proxy + Cloudflare Worker Fallback**: Cookie-injected and header-authenticated streams run through a built-in React proxy layer. If the proxy fails, requests fall back automatically to a Cloudflare Worker. The ready-to-deploy worker script is included in the `worker/` folder — just deploy it to your Cloudflare account and set the worker URL in `.env.local`.
+
 - 🚀 **SHA-256 Hash-Based IndexedDB Cache**: Caches the ~3MB channel database in the browser using IndexedDB. On every page load, it queries a lightweight `/api/iptv/channels/hash` endpoint (~80 bytes). If unchanged, channels load instantly from cache, saving bandwidth and eliminating player lag.
-- 📂 **High-Speed BDIX FTP Portal**: An elegant `/ftp` directory showing local BDIX movie and media servers, complete with real-time online status indicators, host configurations, speed diagnostics, and instant redirection link components.
-- 👥 **Real-Time Watcher Telemetry**: Relocated from the global header to the channel list header, using a non-blocking session heartbeat endpoint to monitor active viewers concurrently.
-- 🌌 **3D CSS Net Background**: A highly optimized, static 3D perspective cyber grid with deep purple and cyan radial glows and a subtle viewport mesh overlay, designed for maximum performance (0% CPU/GPU overhead) on all devices.
-- 🔍 **Interactive Channel Grid**: Filter and search through thousands of Bangla and international live TV channels in real-time. Responsive grid display dynamically adjusts for mobile, tablet, and desktop viewports.
-- ⚡ **Full Skeleton UI Loading States**: Fully unified, custom-designed pulsing skeleton templates for every card element (Player, Details, Developer Info, Total Channels, and Channel List grid) to prevent layout shifts.
-- 🧭 **Glassmorphic Sticky Header**: A clean, luxurious sticky header with brand identification and active live broadcast status.
-- 🏆 **World Cup 2026 Announcement Popup**: A gorgeous, highly professional popup showcasing the official joint broadcasting rights (BTV, T Sports, Somoy TV) live in Bangladesh with custom high-contrast logo backdrops and ambient glowing animations.
-- 🏎️ **Route Transition Optimizations**: Optimized static layout transitions, removing dynamic components to ensure instantaneous navigation between the player and the FTP directories.
+
+- 📂 **High-Speed BDIX FTP Portal**: An elegant `/ftp` directory page showing local BDIX movie and media servers — with real-time online status indicators, host configurations, speed diagnostics, and instant redirection links.
+
+- 👥 **Real-Time Watcher Telemetry**: Non-blocking session heartbeat endpoint monitors concurrent active viewers. Counter is displayed in the channel list header for a live broadcast feel.
+
+- 🔍 **Interactive Channel Grid**: Filter and search thousands of Bangla and international live TV channels in real-time. Responsive grid layout dynamically adjusts across mobile, tablet, and desktop viewports.
+
+- ⚡ **Full Skeleton UI Loading States**: Custom pulsing skeleton templates for every card element — Player, Details, Developer Info, Total Channels, and Channel List grid — preventing layout shifts on slow connections.
+
+- 🌌 **3D CSS Net Background**: Optimized static 3D perspective cyber grid with deep purple and cyan radial glows and a subtle viewport mesh overlay — designed for zero CPU/GPU overhead on all devices.
+
+- 📢 **Announcement Popup**: A gorgeous popup showcasing — with custom high-contrast banner backdrops and ambient glow animations. Fully configurable from the Admin Panel.
+
+- 🏎️ **Route Transition Optimizations**: Optimized static layout transitions between the player and FTP directory pages — dynamic components removed for instantaneous navigation.
+
+- 🧭 **Glassmorphic Sticky Header**: Clean, luxurious sticky header with brand identification and active live broadcast status indicator.
 
 ---
 
